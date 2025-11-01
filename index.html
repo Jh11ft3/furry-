@@ -1,181 +1,898 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>福瑞交流空间 - 服务器状态监控</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        status: {
-                            normal: '#10B981', // 正常运行-绿色
-                            maintain: '#F59E0B', // 保养-黄色
-                            repair: '#EF4444' // 检修-红色
-                        }
-                    },
-                    borderRadius: {
-                        'xl': '1rem'
-                    }
-                }
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>GlassBrowser - 液态玻璃浏览器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0071e3',
+            secondary: '#5856d6',
+            accent: '#af52de',
+            success: '#34c759',
+            warning: '#ffcc00',
+            danger: '#ff3b30',
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+          },
         }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .status-badge {
-                @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm;
-            }
-            .admin-btn {
-                @apply w-full py-3 rounded-xl font-medium transition-all hover:shadow-md;
-            }
-        }
-    </style>
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .glass {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+      }
+      .glass-dark {
+        background: rgba(20, 20, 25, 0.7);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .tab-active {
+        background: rgba(255, 255, 255, 0.2);
+        border-bottom: 2px solid theme('colors.primary');
+      }
+      .url-focus {
+        box-shadow: 0 0 0 2px theme('colors.primary/30');
+        border-color: theme('colors.primary');
+      }
+      .hover-scale {
+        transition: transform 0.2s ease;
+      }
+      .hover-scale:hover {
+        transform: scale(1.05);
+      }
+      .hover-scale:active {
+        transform: scale(0.95);
+      }
+      .slide-in {
+        animation: slideIn 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+      }
+      .slide-out {
+        animation: slideOut 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+      }
+      .fade-in {
+        animation: fadeIn 0.3s ease forwards;
+      }
+      .fade-out {
+        animation: fadeOut 0.3s ease forwards;
+      }
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+      .bounce-in {
+        animation: bounceIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      }
+      .progress-bar {
+        height: 3px;
+        background: transparent;
+        overflow: hidden;
+      }
+      .progress-bar::after {
+        content: '';
+        display: block;
+        height: 100%;
+        width: 0;
+        background: theme('colors.primary');
+        transition: width 0.2s ease;
+      }
+      .scrollbar-thin::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+      }
+      .scrollbar-thin::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .context-menu {
+        transform-origin: top left;
+        opacity: 0;
+        transform: scale(0.95);
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+      }
+      .context-menu.active {
+        opacity: 1;
+        transform: scale(1);
+        pointer-events: all;
+      }
+      .toolbar-btn {
+        @apply w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/10 transition-all duration-200 relative overflow-hidden;
+      }
+      .toolbar-btn::after {
+        content: '';
+        @apply absolute inset-0 bg-white/20 scale-0 rounded-md transition-transform duration-300 origin-center;
+      }
+      .toolbar-btn:active::after {
+        @apply scale-100;
+      }
+      @keyframes slideIn {
+        from { transform: translateX(-10px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(10px); opacity: 0; }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      @keyframes bounceIn {
+        0% { transform: scale(0.8); opacity: 0; }
+        70% { transform: scale(1.05); }
+        100% { transform: scale(1); opacity: 1; }
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans text-gray-800">
-    <!-- 普通用户界面（默认显示） -->
-    <div id="normal-screen" class="container mx-auto px-4 py-8 max-w-md">
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <h1 class="text-2xl font-bold mb-6 text-center">服务器状态监控</h1>
+<body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-800 text-white min-h-screen overflow-hidden font-sans">
+  <!-- 背景装饰 -->
+  <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-[-300px] left-[10%] w-[500px] h-[500px] rounded-full bg-primary/20 blur-[150px] pulse"></div>
+    <div class="absolute bottom-[-200px] right-[15%] w-[400px] h-[400px] rounded-full bg-accent/20 blur-[120px] pulse" style="animation-delay: 1s;"></div>
+  </div>
+
+  <!-- 浏览器主容器 -->
+  <div class="relative z-10 max-w-7xl mx-auto mt-8 mb-8 rounded-xl overflow-hidden shadow-2xl border border-white/10 glass-dark">
+    <!-- 浏览器标题栏 -->
+    <div class="h-10 flex items-center justify-between px-4 glass-dark border-b border-white/10">
+      <div class="flex items-center space-x-2">
+        <!-- 窗口控制按钮 -->
+        <div class="flex space-x-2">
+          <button class="w-5 h-5 rounded-full bg-danger hover:bg-opacity-80 transition-colors duration-200 hover-scale"></button>
+          <button class="w-5 h-5 rounded-full bg-warning hover:bg-opacity-80 transition-colors duration-200 hover-scale"></button>
+          <button class="w-5 h-5 rounded-full bg-success hover:bg-opacity-80 transition-colors duration-200 hover-scale"></button>
+        </div>
+        
+        <!-- 窗口标题 -->
+        <span class="text-sm text-gray-300">GlassBrowser</span>
+      </div>
+      
+      <!-- 右侧功能区 -->
+      <div class="flex items-center space-x-3">
+        <button class="toolbar-btn text-gray-300 hover:text-white">
+          <i class="fa fa-question-circle-o"></i>
+        </button>
+        <button class="toolbar-btn text-gray-300 hover:text-white">
+          <i class="fa fa-cog"></i>
+        </button>
+        <div class="w-6 h-6 rounded-full overflow-hidden border border-white/20">
+          <img src="https://picsum.photos/id/64/100/100" alt="用户头像" class="w-full h-full object-cover">
+        </div>
+      </div>
+    </div>
+    
+    <!-- 浏览器工具栏 -->
+    <div class="h-12 flex items-center px-4 glass-dark border-b border-white/10">
+      <!-- 导航按钮 -->
+      <div class="flex items-center space-x-1 mr-3">
+        <button class="toolbar-btn text-gray-300 hover:text-white" id="backBtn">
+          <i class="fa fa-arrow-left"></i>
+        </button>
+        <button class="toolbar-btn text-gray-300 hover:text-white" id="forwardBtn">
+          <i class="fa fa-arrow-right"></i>
+        </button>
+        <button class="toolbar-btn text-gray-300 hover:text-white" id="refreshBtn">
+          <i class="fa fa-refresh"></i>
+        </button>
+      </div>
+      
+      <!-- 地址栏 -->
+      <div class="flex-1 max-w-3xl relative">
+        <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+          <i class="fa fa-search"></i>
+        </div>
+        <input type="text" id="urlBar" class="w-full pl-10 pr-10 py-2 rounded-full bg-white/5 border border-white/10 focus:outline-none focus:url-focus transition-all duration-200 text-sm" 
+               value="https://www.example.com" placeholder="搜索或输入网址">
+        <div class="absolute right-3 top-1/2 transform -translate-y-1/2 flex space-x-2">
+          <button class="text-gray-400 hover:text-white transition-colors duration-200 hover-scale" id="voiceSearch">
+            <i class="fa fa-microphone"></i>
+          </button>
+          <button class="text-gray-400 hover:text-white transition-colors duration-200 hover-scale" id="qrCode">
+            <i class="fa fa-qrcode"></i>
+          </button>
+        </div>
+        <div class="progress-bar absolute left-0 right-0 bottom-0" id="loadProgress"></div>
+      </div>
+      
+      <!-- 右侧工具按钮 -->
+      <div class="flex items-center space-x-1 ml-3">
+        <button class="toolbar-btn text-gray-300 hover:text-white" id="bookmarkBtn">
+          <i class="fa fa-star-o"></i>
+        </button>
+        <button class="toolbar-btn text-gray-300 hover:text-white" id="historyBtn">
+          <i class="fa fa-history"></i>
+        </button>
+        <button class="toolbar-btn text-gray-300 hover:text-white" id="downloadBtn">
+          <i class="fa fa-download"></i>
+        </button>
+        <button class="toolbar-btn text-gray-300 hover:text-white relative" id="extensionsBtn">
+          <i class="fa fa-puzzle-piece"></i>
+          <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-[10px] flex items-center justify-center">3</span>
+        </button>
+        <button class="toolbar-btn text-gray-300 hover:text-white" id="menuBtn">
+          <i class="fa fa-bars"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 标签栏 -->
+    <div class="h-10 flex items-center px-2 glass-dark border-b border-white/10 overflow-x-auto scrollbar-thin">
+      <div class="flex space-x-1 flex-shrink-0">
+        <!-- 新建标签按钮 -->
+        <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-white/10 text-gray-300 hover:text-white transition-all duration-200 hover-scale" id="newTabBtn">
+          <i class="fa fa-plus text-xs"></i>
+        </button>
+        
+        <!-- 标签页1 - 活跃 -->
+        <div class="tab-active flex items-center px-3 py-1.5 rounded-md text-sm max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis slide-in" data-tab="1">
+          <i class="fa fa-globe mr-2 text-xs text-primary"></i>
+          <span>Example Domain</span>
+          <button class="ml-2 text-gray-400 hover:text-white hover-scale tab-close">
+            <i class="fa fa-times text-xs"></i>
+          </button>
+        </div>
+        
+        <!-- 标签页2 -->
+        <div class="flex items-center px-3 py-1.5 rounded-md text-sm max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis hover:bg-white/10 transition-all duration-200 slide-in" style="animation-delay: 0.1s;" data-tab="2">
+          <i class="fa fa-video-camera mr-2 text-xs text-accent"></i>
+          <span>YouTube</span>
+          <button class="ml-2 text-gray-400 hover:text-white hover-scale tab-close">
+            <i class="fa fa-times text-xs"></i>
+          </button>
+        </div>
+        
+        <!-- 标签页3 -->
+        <div class="flex items-center px-3 py-1.5 rounded-md text-sm max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis hover:bg-white/10 transition-all duration-200 slide-in" style="animation-delay: 0.2s;" data-tab="3">
+          <i class="fa fa-shopping-bag mr-2 text-xs text-success"></i>
+          <span>购物平台</span>
+          <button class="ml-2 text-gray-400 hover:text-white hover-scale tab-close">
+            <i class="fa fa-times text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 内容区域 -->
+    <div class="min-h-[500px] relative">
+      <!-- 主页内容 -->
+      <div class="tab-content h-full p-6" data-tab="1">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <!-- 左侧书签栏 -->
+          <div class="md:col-span-1 space-y-6">
+            <div class="glass rounded-xl p-4">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="font-semibold text-sm">常用书签</h3>
+                <button class="text-gray-400 hover:text-white hover-scale">
+                  <i class="fa fa-plus text-xs"></i>
+                </button>
+              </div>
+              
+              <div class="space-y-3">
+                <a href="#" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-white/10 transition-all duration-200 group">
+                  <div class="w-8 h-8 rounded bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform duration-200">
+                    <i class="fa fa-google text-xs"></i>
+                  </div>
+                  <span class="text-sm">Google</span>
+                </a>
+                
+                <a href="#" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-white/10 transition-all duration-200 group">
+                  <div class="w-8 h-8 rounded bg-red-500/20 flex items-center justify-center text-red-400 group-hover:scale-110 transition-transform duration-200">
+                    <i class="fa fa-youtube-play text-xs"></i>
+                  </div>
+                  <span class="text-sm">YouTube</span>
+                </a>
+                
+                <a href="#" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-white/10 transition-all duration-200 group">
+                  <div class="w-8 h-8 rounded bg-blue-600/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform duration-200">
+                    <i class="fa fa-facebook text-xs"></i>
+                  </div>
+                  <span class="text-sm">Facebook</span>
+                </a>
+                
+                <a href="#" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-white/10 transition-all duration-200 group">
+                  <div class="w-8 h-8 rounded bg-green-500/20 flex items-center justify-center text-green-400 group-hover:scale-110 transition-transform duration-200">
+                    <i class="fa fa-whatsapp text-xs"></i>
+                  </div>
+                  <span class="text-sm">WhatsApp</span>
+                </a>
+              </div>
+            </div>
             
-            <!-- 服务器状态显示区 -->
-            <div class="mb-8 text-center">
-                <p class="text-gray-500 mb-3">当前服务器状态：</p>
-                <!-- 状态徽章（默认正常运行，会根据本地存储更新） -->
-                <div id="server-status" class="status-badge bg-status-normal/10 text-status-normal mx-auto">
-                    <<i class="fa fa-check-circle"></</i>
-                    <span>正常运行</span>
+            <div class="glass rounded-xl p-4">
+              <h3 class="font-semibold text-sm mb-4">下载管理</h3>
+              
+              <div class="space-y-3 max-h-[200px] overflow-y-auto scrollbar-thin pr-1">
+                <div class="glass-dark rounded-lg p-3 hover:bg-white/5 transition-all duration-200">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="text-sm font-medium">document.pdf</h4>
+                      <p class="text-xs text-gray-400 mt-1">2.4 MB</p>
+                    </div>
+                    <span class="text-xs text-success">已完成</span>
+                  </div>
+                  <div class="mt-2 progress-bar bg-white/10">
+                    <div class="h-full w-full bg-success"></div>
+                  </div>
                 </div>
+                
+                <div class="glass-dark rounded-lg p-3 hover:bg-white/5 transition-all duration-200">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="text-sm font-medium">image.png</h4>
+                      <p class="text-xs text-gray-400 mt-1">1.2 MB</p>
+                    </div>
+                    <span class="text-xs text-primary">下载中</span>
+                  </div>
+                  <div class="mt-2 progress-bar bg-white/10">
+                    <div class="h-full w-3/4 bg-primary"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 右侧主内容 -->
+          <div class="md:col-span-3 space-y-6">
+            <!-- 搜索框 -->
+            <div class="glass rounded-xl p-6 text-center bounce-in">
+              <div class="flex justify-center mb-6">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center pulse">
+                  <i class="fa fa-search text-white text-2xl"></i>
+                </div>
+              </div>
+              
+              <div class="max-w-xl mx-auto relative">
+                <input type="text" id="mainSearch" class="w-full pl-10 pr-10 py-3 rounded-full bg-white/5 border border-white/10 focus:outline-none focus:url-focus transition-all duration-200 text-base" 
+                       placeholder="搜索网页、图片、视频...">
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <i class="fa fa-search"></i>
+                </div>
+                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex space-x-3">
+                  <button class="text-gray-400 hover:text-white transition-colors duration-200 hover-scale">
+                    <i class="fa fa-microphone"></i>
+                  </button>
+                  <button class="text-gray-400 hover:text-white transition-colors duration-200 hover-scale">
+                    <i class="fa fa-camera"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="flex justify-center space-x-4 mt-6">
+                <button id="searchBtn" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 hover-scale">
+                  <span class="text-sm">搜索</span>
+                </button>
+                <button id="luckyBtn" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 hover-scale">
+                  <span class="text-sm">运气不错</span>
+                </button>
+              </div>
             </div>
             
-            <!-- 隐藏的管理员密码输入（仅监听键盘输入，无视觉显示） -->
-            <input type="hidden" id="admin-code-input" placeholder="输入管理员密码" maxlength="6">
-            <p class="text-xs text-gray-400 text-center mt-10">© 2024 福瑞交流空间</p>
+            <!-- 热门网站 -->
+            <div>
+              <h3 class="font-semibold text-sm mb-4">热门网站</h3>
+              
+              <div class="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                <a href="https://youtube.com" target="_blank" class="flex flex-col items-center p-3 glass rounded-xl hover:bg-white/10 transition-all duration-200 group hover-scale">
+                  <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 mb-2 group-hover:scale-110 transition-transform duration-200">
+                    <i class="fa fa-youtube-play"></i>
+                  </div>
+                  <span class="text-xs text-center">YouTube</span>
+                </a>
+                
+                <a href="https://facebook.com" target="_blank" class="flex flex-col items-center p-3 glass rounded-xl hover:bg-white/10 transition-all duration-200 group hover-scale">
+                  <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 mb-2 group-hover:scale-110 transition-transform duration-200">
+                    <i class="fa fa-facebook"></i>
+                  </div>
+                  <span class="text-xs text-center">Facebook</span>
+                </a>
+                
+                <a href="https://twitter.com" target="_blank" class="flex flex-col items-center p-3 glass rounded-xl hover:bg-white/10 transition-all duration-200 group hover-scale">
+                  <div class="w-10 h-10 rounded-full bg-sky-500/20 flex items-center justify-center text-sky-400 mb-2 group-hover:scale-110 transition-transform duration-200">
+                    <i class="fa fa-twitter"></i>
+                  </div>
+                  <span class="text-xs text-center">Twitter</span>
+                </a>
+                
+                <a href="https://instagram.com" target="_blank" class="flex flex-col items-center p-3 glass rounded-xl hover:bg-white/10 transition-all duration-200 group hover-scale">
+                  <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 mb-2 group-hover:scale-110 transition-transform duration-200">
+                    <i class="fa fa-instagram"></i>
+                  </div>
+                  <span class="text-xs text-center">Instagram</span>
+                </a>
+                
+                <a href="https://pinterest.com" target="_blank" class="flex flex-col items-center p-3 glass rounded-xl hover:bg-white/10 transition-all duration-200 group hover-scale">
+                  <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 mb-2 group-hover:scale-110 transition-transform duration-200">
+                    <i class="fa fa-pinterest"></i>
+                  </div>
+                  <span class="text-xs text-center">Pinterest</span>
+                </a>
+                
+                <a href="https://amazon.com" target="_blank" class="flex flex-col items-center p-3 glass rounded-xl hover:bg-white/10 transition-all duration-200 group hover-scale">
+                  <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 mb-2 group-hover:scale-110 transition-transform duration-200">
+                    <i class="fa fa-amazon"></i>
+                  </div>
+                  <span class="text-xs text-center">Amazon</span>
+                </a>
+              </div>
+            </div>
+            
+            <!-- 浏览历史 -->
+            <div>
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="font-semibold text-sm">最近浏览</h3>
+                <button class="text-xs text-primary hover:underline transition-colors duration-200">
+                  查看全部
+                </button>
+              </div>
+              
+              <div class="space-y-3">
+                <a href="#" class="flex items-center p-3 glass rounded-xl hover:bg-white/10 transition-all duration-200 group">
+                  <div class="w-10 h-10 rounded bg-blue-500/20 flex items-center justify-center text-blue-400 mr-3 flex-shrink-0 group-hover:scale-110 transition-transform duration-200">
+                    <i class="fa fa-file-text-o"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="text-sm font-medium truncate">如何创建液态玻璃UI设计</h4>
+                    <p class="text-xs text-gray-400 mt-0.5 truncate">design.tutsplus.com</p>
+                  </div>
+                  <span class="text-xs text-gray-400 ml-3">今天</span>
+                </a>
+                
+                <a href="#" class="flex items-center p-3 glass rounded-xl hover:bg-white/10 transition-all duration-200 group">
+                  <div class="w-10 h-10 rounded bg-green-500/20 flex items-center justify-center text-green-400 mr-3 flex-shrink-0 group-hover:scale-110 transition-transform duration-200">
+                    <i class="fa fa-video-camera"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="text-sm font-medium truncate">2023年最佳UI设计趋势</h4>
+                    <p class="text-xs text-gray-400 mt-0.5 truncate">youtube.com</p>
+                  </div>
+                  <span class="text-xs text-gray-400 ml-3">昨天</span>
+                </a>
+                
+                <a href="#" class="flex items-center p-3 glass rounded-xl hover:bg-white/10 transition-all duration-200 group">
+                  <div class="w-10 h-10 rounded bg-purple-500/20 flex items-center justify-center text-purple-400 mr-3 flex-shrink-0 group-hover:scale-110 transition-transform duration-200">
+                    <i class="fa fa-shopping-bag"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="text-sm font-medium truncate">新款MacBook Pro 评测</h4>
+                    <p class="text-xs text-gray-400 mt-0.5 truncate">techcrunch.com</p>
+                  </div>
+                  <span class="text-xs text-gray-400 ml-3">3天前</span>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
-    </div>
-
-    <!-- 管理员界面（默认隐藏） -->
-    <div id="admin-screen" class="hidden container mx-auto px-4 py-8 max-w-md">
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <div class="flex justify-between items-center mb-6">
-                <h1 class="text-2xl font-bold">管理员控制台</h1>
-                <button id="back-btn" class="text-gray-500 hover:text-gray-700 transition-colors">
-                    <<i class="fa fa-arrow-left"></</i> 返回
-                </button>
-            </div>
-            
-            <!-- 状态设置标题 -->
-            <p class="text-gray-500 mb-4">设置服务器状态：</p>
-            
-            <!-- 三个状态选项按钮 -->
-            <div class="flex flex-col gap-3 mb-8">
-                <button id="set-normal" class="admin-btn bg-status-normal/10 text-status-normal hover:bg-status-normal/20">
-                    <<i class="fa fa-check-circle mr-2"></</i> 正常运行
-                </button>
-                <button id="set-maintain" class="admin-btn bg-status-maintain/10 text-status-maintain hover:bg-status-maintain/20">
-                    <<i class="fa fa-wrench mr-2"></</i> 保养中
-                </button>
-                <button id="set-repair" class="admin-btn bg-status-repair/10 text-status-repair hover:bg-status-repair/20">
-                    <<i class="fa fa-exclamation-triangle mr-2"></</i> 检修中
-                </button>
-            </div>
-            
-            <!-- 操作提示 -->
-            <div class="text-xs text-gray-400 text-center">
-                <p>设置后状态将实时同步到普通界面</p>
-            </div>
+      </div>
+      
+      <!-- 其他标签内容 (默认隐藏) -->
+      <div class="tab-content h-full p-6 hidden" data-tab="2">
+        <div class="flex flex-col items-center justify-center h-full text-center">
+          <div class="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 mb-6 pulse">
+            <i class="fa fa-youtube-play text-3xl"></i>
+          </div>
+          <h2 class="text-xl font-semibold mb-2">YouTube</h2>
+          <p class="text-gray-400 max-w-md">浏览和观看全球各类视频内容，包括音乐、游戏、教育等</p>
         </div>
+      </div>
+      
+      <div class="tab-content h-full p-6 hidden" data-tab="3">
+        <div class="flex flex-col items-center justify-center h-full text-center">
+          <div class="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 mb-6 pulse">
+            <i class="fa fa-shopping-bag text-3xl"></i>
+          </div>
+          <h2 class="text-xl font-semibold mb-2">购物平台</h2>
+          <p class="text-gray-400 max-w-md">浏览各类商品，比较价格，轻松购物</p>
+        </div>
+      </div>
     </div>
+    
+    <!-- 状态栏 -->
+    <div class="h-8 flex items-center justify-between px-4 glass-dark border-t border-white/10 text-xs text-gray-400">
+      <div class="flex items-center space-x-4">
+        <div><i class="fa fa-signal mr-1"></i> 已保护</div>
+        <div><i class="fa fa-clock-o mr-1"></i> 加载于 10:23</div>
+      </div>
+      
+      <div class="flex items-center space-x-4">
+        <div>100% 缩放</div>
+        <div>已连接 Wi-Fi</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 右键菜单 (默认隐藏) -->
+  <div class="context-menu fixed glass-dark rounded-lg p-1 z-50 min-w-[180px]" id="contextMenu">
+    <div class="context-item px-3 py-2 text-sm hover:bg-white/10 rounded cursor-pointer transition-colors duration-200">
+      <i class="fa fa-cut mr-2 text-gray-400"></i> 剪切
+    </div>
+    <div class="context-item px-3 py-2 text-sm hover:bg-white/10 rounded cursor-pointer transition-colors duration-200">
+      <i class="fa fa-copy mr-2 text-gray-400"></i> 复制
+    </div>
+    <div class="context-item px-3 py-2 text-sm hover:bg-white/10 rounded cursor-pointer transition-colors duration-200">
+      <i class="fa fa-paste mr-2 text-gray-400"></i> 粘贴
+    </div>
+    <div class="border-t border-white/10 my-1"></div>
+    <div class="context-item px-3 py-2 text-sm hover:bg-white/10 rounded cursor-pointer transition-colors duration-200">
+      <i class="fa fa-search mr-2 text-gray-400"></i> 搜索
+    </div>
+    <div class="context-item px-3 py-2 text-sm hover:bg-white/10 rounded cursor-pointer transition-colors duration-200">
+      <i class="fa fa-star-o mr-2 text-gray-400"></i> 添加书签
+    </div>
+  </div>
+  
+  <!-- 通知提示 -->
+  <div id="notification" class="fixed bottom-6 right-6 glass-dark rounded-lg p-4 max-w-xs transform translate-y-full opacity-0 transition-all duration-400 z-50 flex items-start space-x-3">
+    <div id="notifyIcon" class="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center text-success mt-0.5 flex-shrink-0">
+      <i class="fa fa-check"></i>
+    </div>
+    <div>
+      <h4 id="notifyTitle" class="font-medium text-sm">操作成功</h4>
+      <p id="notifyMessage" class="text-xs text-gray-300 mt-1">已添加到书签</p>
+    </div>
+    <button id="closeNotify" class="text-gray-400 hover:text-white transition-colors duration-200 hover-scale">
+      <i class="fa fa-times"></i>
+    </button>
+  </div>
 
-    <script>
-        // 1. DOM元素获取
-        const normalScreen = document.getElementById('normal-screen');
-        const adminScreen = document.getElementById('admin-screen');
-        const serverStatusBadge = document.getElementById('server-status');
-        const adminCodeInput = document.getElementById('admin-code-input');
-        const backBtn = document.getElementById('back-btn');
-        // 管理员状态设置按钮
-        const setNormalBtn = document.getElementById('set-normal');
-        const setMaintainBtn = document.getElementById('set-maintain');
-        const setRepairBtn = document.getElementById('set-repair');
-
-        // 2. 核心配置
-        const ADMIN_CODE = '880226'; // 管理员密码
-        let inputCode = ''; // 存储用户输入的密码
-
-        // 3. 初始化：从本地存储读取服务器状态（页面刷新不丢失）
-        function initServerStatus() {
-            const savedStatus = localStorage.getItem('serverStatus') || 'normal';
-            updateStatusDisplay(savedStatus);
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // DOM元素获取
+      const urlBar = document.getElementById('urlBar');
+      const mainSearch = document.getElementById('mainSearch');
+      const searchBtn = document.getElementById('searchBtn');
+      const luckyBtn = document.getElementById('luckyBtn');
+      const backBtn = document.getElementById('backBtn');
+      const forwardBtn = document.getElementById('forwardBtn');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const bookmarkBtn = document.getElementById('bookmarkBtn');
+      const newTabBtn = document.getElementById('newTabBtn');
+      const tabs = document.querySelectorAll('[data-tab]');
+      const tabContents = document.querySelectorAll('.tab-content');
+      const tabCloseButtons = document.querySelectorAll('.tab-close');
+      const loadProgress = document.getElementById('loadProgress');
+      const contextMenu = document.getElementById('contextMenu');
+      const notification = document.getElementById('notification');
+      const notifyTitle = document.getElementById('notifyTitle');
+      const notifyMessage = document.getElementById('notifyMessage');
+      const notifyIcon = document.getElementById('notifyIcon');
+      const closeNotify = document.getElementById('closeNotify');
+      
+      // 标签页管理
+      let tabCount = 3;
+      let history = ['https://www.example.com', 'https://www.youtube.com', 'https://www.shop.com'];
+      let historyIndex = 0;
+      let isBookmarked = false;
+      
+      // 实现搜索功能
+      function performSearch(query, lucky = false) {
+        if (!query.trim()) return;
+        
+        // 判断是否是网址（简单判断）
+        if (query.includes('.') && !query.includes(' ')) {
+          // 如果是网址，直接跳转
+          window.location.href = query.startsWith('http') ? query : `https://${query}`;
+        } else {
+          // 如果是搜索词，使用百度搜索
+          const searchUrl = lucky 
+            ? `https://www.baidu.com/s?wd=${encodeURIComponent(query)}&tn=baiduerr&ie=utf-8`
+            : `https://www.baidu.com/s?wd=${encodeURIComponent(query)}`;
+          window.location.href = searchUrl;
         }
-
-        // 4. 更新状态显示（普通界面+本地存储）
-        function updateStatusDisplay(status) {
-            // 清除原有样式和内容
-            serverStatusBadge.className = 'status-badge mx-auto';
-            serverStatusBadge.innerHTML = '';
-
-            // 根据状态设置样式和内容
-            switch(status) {
-                case 'normal':
-                    serverStatusBadge.classList.add('bg-status-normal/10', 'text-status-normal');
-                    serverStatusBadge.innerHTML = '<<i class="fa fa-check-circle"></</i><span>正常运行</span>';
-                    break;
-                case 'maintain':
-                    serverStatusBadge.classList.add('bg-status-maintain/10', 'text-status-maintain');
-                    serverStatusBadge.innerHTML = '<<i class="fa fa-wrench"></</i><span>保养中</span>';
-                    break;
-                case 'repair':
-                    serverStatusBadge.classList.add('bg-status-repair/10', 'text-status-repair');
-                    serverStatusBadge.innerHTML = '<<i class="fa fa-exclamation-triangle"></</i><span>检修中</span>';
-                    break;
-            }
-
-            // 保存状态到本地存储
-            localStorage.setItem('serverStatus', status);
+      }
+      
+      // 地址栏搜索
+      urlBar.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          performSearch(this.value);
         }
-
-        // 5. 监听全局键盘输入（普通界面输入密码）
-        document.addEventListener('keydown', (e) => {
-            // 只有在普通界面时才监听密码输入
-            if (normalScreen.classList.contains('hidden')) return;
-
-            // 只监听数字键（0-9）
-            if (e.key >= '0' && e.key <= '9') {
-                inputCode += e.key;
-                // 密码长度达到6位时验证
-                if (inputCode.length === 6) {
-                    if (inputCode === ADMIN_CODE) {
-                        // 密码正确：切换到管理员界面
-                        normalScreen.classList.add('hidden');
-                        adminScreen.classList.remove('hidden');
-                    }
-                    // 无论正确与否，重置输入（避免重复验证）
-                    inputCode = '';
-                }
-            } else if (e.key === 'Backspace') {
-                // 支持退格键删除输入
-                inputCode = inputCode.slice(0, -1);
+      });
+      
+      // 主搜索框搜索
+      mainSearch.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          performSearch(this.value);
+        }
+      });
+      
+      // 搜索按钮
+      searchBtn.addEventListener('click', function() {
+        performSearch(mainSearch.value);
+      });
+      
+      // 运气不错按钮
+      luckyBtn.addEventListener('click', function() {
+        performSearch(mainSearch.value, true);
+      });
+      
+      // 标签切换功能
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function(e) {
+          // 避免点击关闭按钮时切换标签
+          if (e.target.closest('.tab-close')) return;
+          
+          const tabId = this.getAttribute('data-tab');
+          
+          // 更新标签样式
+          tabs.forEach(t => t.classList.remove('tab-active'));
+          this.classList.add('tab-active');
+          
+          // 更新内容区域
+          tabContents.forEach(content => {
+            content.classList.add('hidden');
+          });
+          document.querySelector(`.tab-content[data-tab="${tabId}"]`).classList.remove('hidden');
+          
+          // 更新地址栏
+          urlBar.value = history[parseInt(tabId) - 1];
+          
+          // 模拟加载进度
+          simulateLoading();
+        });
+      });
+      
+      // 关闭标签页
+      tabCloseButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const tab = this.closest('[data-tab]');
+          const tabId = tab.getAttribute('data-tab');
+          
+          // 如果是最后一个标签，不允许关闭
+          if (tabs.length <= 1) {
+            showNotification('提示', '至少保留一个标签页', 'info');
+            return;
+          }
+          
+          // 移除标签和内容
+          tab.classList.add('slide-out');
+          setTimeout(() => {
+            tab.remove();
+            
+            const content = document.querySelector(`.tab-content[data-tab="${tabId}"]`);
+            if (content) content.remove();
+            
+            // 如果关闭的是当前活跃标签，切换到第一个标签
+            if (tab.classList.contains('tab-active')) {
+              const firstTab = document.querySelector('[data-tab]');
+              if (firstTab) firstTab.click();
             }
+          }, 300);
         });
-
-        // 6. 管理员界面：状态设置按钮事件
-        setNormalBtn.addEventListener('click', () => updateStatusDisplay('normal'));
-        setMaintainBtn.addEventListener('click', () => updateStatusDisplay('maintain'));
-        setRepairBtn.addEventListener('click', () => updateStatusDisplay('repair'));
-
-        // 7. 管理员界面：返回普通界面
-        backBtn.addEventListener('click', () => {
-            adminScreen.classList.add('hidden');
-            normalScreen.classList.remove('hidden');
-            inputCode = ''; // 重置密码输入
+      });
+      
+      // 新建标签页
+      newTabBtn.addEventListener('click', function() {
+        tabCount++;
+        const newTabId = tabCount;
+        const newUrl = `https://newtab${newTabId}.com`;
+        history.push(newUrl);
+        
+        // 创建新标签
+        const newTab = document.createElement('div');
+        newTab.className = 'flex items-center px-3 py-1.5 rounded-md text-sm max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis hover:bg-white/10 transition-all duration-200';
+        newTab.setAttribute('data-tab', newTabId);
+        newTab.innerHTML = `
+          <i class="fa fa-globe mr-2 text-xs text-primary"></i>
+          <span>新标签页 ${newTabId - 3}</span>
+          <button class="ml-2 text-gray-400 hover:text-white hover-scale tab-close">
+            <i class="fa fa-times text-xs"></i>
+          </button>
+        `;
+        
+        // 添加到标签栏
+        this.after(newTab);
+        newTab.classList.add('slide-in');
+        
+        // 创建新内容区域
+        const newContent = document.createElement('div');
+        newContent.className = 'tab-content h-full p-6 hidden';
+        newContent.setAttribute('data-tab', newTabId);
+        newContent.innerHTML = `
+          <div class="flex flex-col items-center justify-center h-full text-center">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center text-white mb-6 pulse">
+              <i class="fa fa-globe text-3xl"></i>
+            </div>
+            <h2 class="text-xl font-semibold mb-2">新标签页 ${newTabId - 3}</h2>
+            <p class="text-gray-400 max-w-md">在地址栏输入网址开始浏览</p>
+          </div>
+        `;
+        
+        document.querySelector('.tab-content').parentNode.appendChild(newContent);
+        
+        // 添加关闭事件
+        newTab.querySelector('.tab-close').addEventListener('click', function(e) {
+          e.stopPropagation();
+          newTab.classList.add('slide-out');
+          setTimeout(() => {
+            newTab.remove();
+            newContent.remove();
+            
+            if (newTab.classList.contains('tab-active')) {
+              const firstTab = document.querySelector('[data-tab]');
+              if (firstTab) firstTab.click();
+            }
+          }, 300);
         });
-
-        // 8. 页面加载时初始化状态
-        window.addEventListener('load', initServerStatus);
-    </script>
+        
+        // 点击切换到新标签
+        newTab.addEventListener('click', function() {
+          tabs.forEach(t => t.classList.remove('tab-active'));
+          this.classList.add('tab-active');
+          
+          tabContents.forEach(content => {
+            content.classList.add('hidden');
+          });
+          newContent.classList.remove('hidden');
+          
+          urlBar.value = newUrl;
+          simulateLoading();
+        });
+        
+        // 自动切换到新标签
+        setTimeout(() => {
+          newTab.click();
+        }, 100);
+      });
+      
+      // 地址栏聚焦/失焦效果
+      urlBar.addEventListener('focus', function() {
+        this.select();
+      });
+      
+      // 刷新按钮功能
+      refreshBtn.addEventListener('click', function() {
+        simulateLoading();
+      });
+      
+      // 后退按钮功能
+      backBtn.addEventListener('click', function() {
+        if (historyIndex > 0) {
+          historyIndex--;
+          urlBar.value = history[historyIndex];
+          simulateLoading();
+        } else {
+          showNotification('提示', '已经是最前页', 'info');
+        }
+      });
+      
+      // 前进按钮功能
+      forwardBtn.addEventListener('click', function() {
+        if (historyIndex < history.length - 1) {
+          historyIndex++;
+          urlBar.value = history[historyIndex];
+          simulateLoading();
+        } else {
+          showNotification('提示', '已经是最后页', 'info');
+        }
+      });
+      
+      // 书签按钮功能
+      bookmarkBtn.addEventListener('click', function() {
+        isBookmarked = !isBookmarked;
+        
+        if (isBookmarked) {
+          this.innerHTML = '<i class="fa fa-star"></i>';
+          showNotification('成功', '已添加到书签', 'success');
+        } else {
+          this.innerHTML = '<i class="fa fa-star-o"></i>';
+          showNotification('成功', '已从书签移除', 'info');
+        }
+      });
+      
+      // 模拟页面加载进度
+      function simulateLoading() {
+        let progress = 0;
+        loadProgress.style.setProperty('--progress', '0%');
+        loadProgress.querySelector('::after').style.width = '0%';
+        
+        const interval = setInterval(() => {
+          progress += Math.random() * 10;
+          
+          if (progress > 100) {
+            progress = 100;
+            clearInterval(interval);
+          }
+          
+          loadProgress.querySelector('::after').style.width = `${progress}%`;
+        }, 150);
+      }
+      
+      // 右键菜单功能
+      document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        
+        // 计算位置，避免超出屏幕
+        let left = e.clientX;
+        let top = e.clientY;
+        
+        if (left + 200 > window.innerWidth) {
+          left = window.innerWidth - 200;
+        }
+        
+        if (top + 200 > window.innerHeight) {
+          top = window.innerHeight - 200;
+        }
+        
+        // 设置菜单位置并显示
+        contextMenu.style.left = `${left}px`;
+        contextMenu.style.top = `${top}px`;
+        contextMenu.classList.add('active');
+      });
+      
+      // 点击其他地方关闭右键菜单
+      document.addEventListener('click', function(e) {
+        if (!contextMenu.contains(e.target)) {
+          contextMenu.classList.remove('active');
+        }
+      });
+      
+      // 右键菜单项点击
+      document.querySelectorAll('.context-item').forEach(item => {
+        item.addEventListener('click', function() {
+          const action = this.textContent.trim().split(' ')[0];
+          showNotification('操作', `${action} 已执行`, 'info');
+          contextMenu.classList.remove('active');
+        });
+      });
+      
+      // 通知功能
+      function showNotification(title, message, type = 'info') {
+        notifyTitle.textContent = title;
+        notifyMessage.textContent = message;
+        
+        if (type === 'success') {
+          notifyIcon.className = 'w-8 h-8 rounded-full bg-success/20 flex items-center justify-center text-success mt-0.5 flex-shrink-0';
+          notifyIcon.innerHTML = '<i class="fa fa-check"></i>';
+        } else if (type === 'error') {
+          notifyIcon.className = 'w-8 h-8 rounded-full bg-danger/20 flex items-center justify-center text-danger mt-0.5 flex-shrink-0';
+          notifyIcon.innerHTML = '<i class="fa fa-times"></i>';
+        } else {
+          notifyIcon.className = 'w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary mt-0.5 flex-shrink-0';
+          notifyIcon.innerHTML = '<i class="fa fa-info"></i>';
+        }
+        
+        notification.classList.remove('translate-y-full', 'opacity-0');
+        notification.classList.add('translate-y-0', 'opacity-100');
+        
+        const timer = setTimeout(hideNotification, 3000);
+        
+        closeNotify.onclick = function() {
+          clearTimeout(timer);
+          hideNotification();
+        };
+      }
+      
+      function hideNotification() {
+        notification.classList.remove('translate-y-0', 'opacity-100');
+        notification.classList.add('translate-y-full', 'opacity-0');
+      }
+      
+      // 初始化页面加载
+      simulateLoading();
+    });
+  </script>
 </body>
 </html>
