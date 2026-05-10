@@ -12,7 +12,6 @@
             font-family: "SF Pro Display", "Microsoft YaHei", sans-serif;
             transition: all 0.3s ease;
         }
-        /* 浅色模式：柔和渐变背景 */
         :root[data-theme="light"] {
             --bg: linear-gradient(135deg, #f8fbff 0%, #e0eaff 100%);
             --glass: rgba(255,255,255,0.25);
@@ -22,7 +21,6 @@
             --card: rgba(255,255,255,0.45);
             --shadow: 0 8px 30px rgba(0,0,0,0.1);
         }
-        /* 深色模式：高级渐变背景 */
         :root[data-theme="dark"] {
             --bg: linear-gradient(135deg, #111827 0%, #1f2937 50%, #0f172a 100%);
             --glass: rgba(20,20,30,0.4);
@@ -64,12 +62,11 @@
         .nav-links button {
             background: transparent; border: 0;
             color: var(--text); font-size: 15px; cursor: pointer;
+            padding: 6px 12px; border-radius: 10px;
         }
         .nav-links button.active {
             font-weight: 600;
-            padding: 6px 12px;
             background: rgba(255,255,255,0.2);
-            border-radius: 10px;
         }
         .theme-btn {
             padding: 8px 14px; border-radius: 10px; border: 0; cursor: pointer;
@@ -136,32 +133,125 @@
             padding: 12px 18px; border-radius: 12px; border: 0; cursor: pointer;
             background: #6ea8ff; color: white;
         }
-        .auth-card {
-            width: 100%; max-width: 420px; margin: 10px auto;
-            padding: 24px; display: flex; flex-direction: column; gap: 14px;
+
+        /* 登录页面仿HBS样式 */
+        .login-card {
+            width: 100%; max-width: 420px; margin: 40px auto;
+            padding: 30px 24px; display: flex; flex-direction: column;
+            text-align: center; gap:16px;
         }
-        .auth-card input {
+        .login-card h2 {
+            margin-bottom: 10px;
+        }
+        .login-card input {
             padding: 12px; border-radius: 10px; border: 0;
-            background: rgba(255,255,255,0.2); color: var(--text); outline: none;
+            background: rgba(255,255,255,0.2); color: var(--text);
+            outline: none;
+            font-size: 15px;
         }
-        .captcha {
-            padding: 10px; border-radius: 10px; text-align: center;
-            background: rgba(0,0,0,0.15);
+        .login-btn {
+            padding: 12px; border-radius: 10px; border: 0;
+            background: #58b4ff; color: white;
+            font-weight: 600; cursor: pointer;
+            font-size: 15px;
         }
-        .auth-btn {
-            padding: 12px; border: 0; border-radius: 10px; cursor: pointer;
-            background: #58b4ff; color: white; font-weight: 600;
+
+        /* 关于页面 */
+        .about-card {
+            width: 100%; max-width: 420px; margin: 40px auto;
+            padding: 30px 24px; text-align: center;
         }
-        .tab-row {
-            display: flex; gap: 10px; margin-bottom: 6px;
+        .version-text {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 20px 0;
+            cursor: pointer;
         }
-        .tab-row button {
-            flex: 1; padding: 10px; border: 0; border-radius: 10px; cursor: pointer;
-            background: transparent; color: var(--text);
+        .time-text {
+            color: var(--subtext);
+            margin-bottom: 30px;
         }
-        .tab-row button.active {
-            background: rgba(255,255,255,0.25);
+        .about-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 0;
+            margin: 8px 0;
+            cursor: pointer;
+            font-size: 15px;
         }
+        .logout-btn {
+            background: rgba(100,180,255,0.25);
+            color: var(--text);
+        }
+        .del-btn {
+            background: rgba(255,100,100,0.25);
+            color: #ff6b6b;
+        }
+
+        /* 管理员弹窗 */
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .modal-box {
+            background: #1f2937;
+            padding: 25px;
+            border-radius: 14px;
+            width: 90%; max-width: 350px;
+        }
+        .modal-box input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 0;
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            outline: none;
+        }
+        .modal-box button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 0;
+            background: #58b4ff;
+            color: white;
+            cursor: pointer;
+        }
+        /* 源代码弹窗 */
+        .code-modal {
+            position: fixed;
+            top:0;left:0;
+            width:100%;height:100%;
+            background:#000;
+            z-index:10000;
+            display:none;
+            padding:20px;
+        }
+        .code-modal pre {
+            color:#ccc;
+            font-size:12px;
+            white-space:pre-wrap;
+            word-break:break-all;
+            height:100%;
+            overflow:auto;
+        }
+        .close-code {
+            position:absolute;
+            top:10px;right:20px;
+            color:#fff;
+            font-size:24px;
+            cursor:pointer;
+        }
+
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 6px; }
     </style>
@@ -173,15 +263,17 @@
             <button class="nav-btn active" data-target="home">主页</button>
             <button class="nav-btn" data-target="ai">AI助手</button>
             <button class="nav-btn" data-target="profile">我的</button>
+            <button class="nav-btn" data-target="about">关于</button>
         </div>
         <button class="theme-btn" id="themeToggle">深浅模式</button>
     </nav>
+
     <main>
         <!-- 主页 -->
         <section class="page active" id="home">
             <div class="hero glass">
                 <h1>欢迎来到福瑞专属主页</h1>
-                <p style="color:var(--subtext)">液态玻璃风格 · 流畅体验 · AI 内置</p >
+                <p style="color:var(--subtext)">液态玻璃风格 · 流畅体验 · AI 内置</p>
             </div>
             <div class="gallery glass">
                 <h3 style="margin-bottom:14px">福瑞图片展示区</h3>
@@ -195,6 +287,7 @@
                 </div>
             </div>
         </section>
+
         <!-- AI助手 -->
         <section class="page" id="ai">
             <div class="ai-chat glass">
@@ -206,32 +299,52 @@
                 </div>
             </div>
         </section>
-        <!-- 我的（登录注册） -->
+
+        <!-- 我的 仿HBS登录 -->
         <section class="page" id="profile">
-            <div class="auth-card glass">
-                <div class="tab-row">
-                    <button class="auth-tab active" data-tab="login">登录</button>
-                    <button class="auth-tab" data-tab="register">注册</button>
-                </div>
-                <!-- 登录 -->
-                <div class="auth-form active" id="loginForm">
-                    <input placeholder="账号">
-                    <input type="password" placeholder="密码">
-                    <div class="captcha">人机验证区域</div>
-                    <button class="auth-btn">登录</button>
-                </div>
-                <!-- 注册 -->
-                <div class="auth-form" id="registerForm" style="display:none;">
-                    <input placeholder="用户名">
-                    <input placeholder="账号">
-                    <input type="password" placeholder="密码">
-                    <div class="captcha">人机验证区域</div>
-                    <button class="auth-btn">注册</button>
-                </div>
+            <div class="login-card glass">
+                <h2>账号登录</h2>
+                <input id="accInput" placeholder="请输入账号">
+                <input id="pwdInput" type="password" placeholder="请输入密码">
+                <button class="login-btn" onclick="localLogin()">立即登录</button>
+            </div>
+        </section>
+
+        <!-- 关于页面 -->
+        <section class="page" id="about">
+            <div class="about-card glass">
+                <h2>关于本应用</h2>
+                <div class="version-text" id="versionClick">1.0.7beta5</div>
+                <div class="time-text">发布时间：2026年5月2日 19点17分31秒</div>
+                <button class="about-btn logout-btn" onclick="logoutSys()">退出登录</button>
+                <button class="about-btn del-btn" onclick="delAccount()">注销账号</button>
             </div>
         </section>
     </main>
+
+    <!-- 管理员登录弹窗 -->
+    <div class="modal" id="secretModal">
+        <div class="modal-box">
+            <h3 style="color:#fff;margin-bottom:15px;text-align:center;">管理员验证</h3>
+            <input id="secAcc" placeholder="管理员账号">
+            <input id="secPwd" type="password" placeholder="管理员密码">
+            <button onclick="checkSecret()">确认验证</button>
+        </div>
+    </div>
+
+    <!-- 查看源代码弹窗 -->
+    <div class="code-modal" id="codeModal">
+        <span class="close-code" onclick="closeCodeView()">×</span>
+        <pre id="codeContent"></pre>
+    </div>
+
     <script>
+        // 你的新API Key
+        const API_KEY = "sk-zsribjbgavtseqnqhvuwwoqunkygtkyojawqhffxyfrzpvkl";
+        const API_URL = "https://api.siliconflow.cn/v1/chat/completions";
+        const MODEL = "Qwen/Qwen3-8B";
+
+        // 深浅模式
         const root = document.documentElement;
         const saved = localStorage.getItem("theme") || "dark";
         root.setAttribute("data-theme", saved);
@@ -241,6 +354,8 @@
             root.setAttribute("data-theme", next);
             localStorage.setItem("theme", next);
         };
+
+        // 页面切换
         document.querySelectorAll(".nav-btn").forEach(btn => {
             btn.onclick = () => {
                 document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
@@ -250,28 +365,72 @@
                 document.getElementById(target).classList.add("active");
             };
         });
-        document.querySelectorAll(".auth-tab").forEach(tab => {
-            tab.onclick = () => {
-                document.querySelectorAll(".auth-tab").forEach(t => t.classList.remove("active"));
-                tab.classList.add("active");
-                const t = tab.dataset.tab;
-                document.getElementById("loginForm").style.display = t === "login"? "block" : "none";
-                document.getElementById("registerForm").style.display = t === "register"? "block" : "none";
-            };
-        });
 
-        // ========== 硅基流动配置（你的Key+纯8B模型） ==========
-        const API_KEY = "sk-notxpaduknxfetcjomcskyuxsitcbxxojnousrcunoipjqxt";
-        const API_URL = "https://api.siliconflow.cn/v1/chat/completions";
-        const MODEL = "Qwen/Qwen3-8B";
-        // ==================================================
+        // 本地登录
+        function localLogin(){
+            let acc = document.getElementById("accInput").value.trim();
+            let pwd = document.getElementById("pwdInput").value.trim();
+            if(!acc || !pwd){
+                alert("请输入账号和密码");
+                return;
+            }
+            localStorage.setItem("localAcc",acc);
+            localStorage.setItem("localPwd",pwd);
+            alert("登录成功");
+        }
+        // 退出
+        function logoutSys(){
+            localStorage.removeItem("localAcc");
+            localStorage.removeItem("localPwd");
+            alert("已退出登录");
+        }
+        // 注销
+        function delAccount(){
+            if(confirm("确定注销账号？将清空所有本地数据！")){
+                localStorage.clear();
+                alert("账号已注销");
+            }
+        }
 
+        // 版本号连击5次
+        let clickCount = 0;
+        const verEle = document.getElementById("versionClick");
+        verEle.onclick = function(){
+            clickCount++;
+            if(clickCount >= 5){
+                clickCount = 0;
+                document.getElementById("secretModal").style.display = "flex";
+            }
+            setTimeout(()=>clickCount=0,1500);
+        };
+
+        // 管理员验证，成功直接看完整源码（不遮挡任何内容）
+        function checkSecret(){
+            let a = document.getElementById("secAcc").value.trim();
+            let p = document.getElementById("secPwd").value.trim();
+            if(a === "阿兰是只喵" && p === "9657261"){
+                document.getElementById("secretModal").style.display = "none";
+                // 直接获取原生完整源码，不做任何替换隐藏
+                let source = document.documentElement.outerHTML;
+                document.getElementById("codeContent").textContent = source;
+                document.getElementById("codeModal").style.display = "block";
+            }else{
+                alert("账号或密码错误");
+            }
+        }
+        // 关闭源码查看
+        function closeCodeView(){
+            document.getElementById("codeModal").style.display = "none";
+        }
+
+        // 规范版AI聊天请求（解决403问题）
         async function sendMessage() {
             const input = document.getElementById("userInput");
             const text = input.value.trim();
             if (!text) return;
             const messages = document.getElementById("messages");
-            
+
+            // 添加用户消息
             const userMsg = document.createElement("div");
             userMsg.className = "msg user";
             userMsg.textContent = text;
@@ -288,12 +447,14 @@
                     },
                     body: JSON.stringify({
                         model: MODEL,
-                        messages: [{ role: "user", content: text }],
-                        stream: false
+                        messages: [{ role: "user", content: text }]
                     })
                 });
 
-                if (!res.ok) throw new Error(`请求失败: ${res.status}`);
+                if (!res.ok) {
+                    throw new Error(`请求失败: ${res.status}`);
+                }
+
                 const data = await res.json();
                 const aiText = data.choices[0].message.content || "暂无回复";
 
@@ -302,7 +463,7 @@
                 botMsg.textContent = aiText;
                 messages.appendChild(botMsg);
                 messages.scrollTop = messages.scrollHeight;
-            } catch(e) {
+            } catch (e) {
                 console.error("错误详情:", e);
                 const errMsg = document.createElement("div");
                 errMsg.className = "msg bot";
@@ -310,7 +471,6 @@
                 messages.appendChild(errMsg);
             }
         }
-
         document.getElementById("userInput").addEventListener("keydown", e => {
             if (e.key === "Enter") sendMessage();
         });
